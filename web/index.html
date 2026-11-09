@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hash-chat — быстрый чат на хэшах</title>
+  <meta name="description" content="Чат, в котором сервер не видит сообщений: контент хранится в CAS по sha256, порядок — в цепочке хэшей.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./"><span class="brand-mark">#</span>hash-chat</a>
+    <nav class="site-nav">
+      <a href="#how">Как работает</a>
+      <a href="#fast">Почему быстро</a>
+      <a href="https://github.com/CupIvan/hash-chat">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">быстрый чат на хэшах</p>
+      <h1>Сервер не видит<br>ваши сообщения.</h1>
+      <p class="lead">
+        Он хранит только хэши, порядок и цепочку <code>prev</code>.
+        Содержимое лежит в CAS, а браузер проверяет целостность.
+      </p>
+      <div class="actions">
+        <a class="button" href="#how">Как это работает</a>
+        <a class="button button-ghost" href="https://github.com/CupIvan/hash-chat">Исходники на GitHub</a>
+      </div>
+      <p class="note">Веб-версия в разработке — чат появится здесь.</p>
+    </section>
+
+    <section id="how" class="section">
+      <div class="section-head">
+        <p class="eyebrow">архитектура</p>
+        <h2>Два сервера, один браузер</h2>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <span class="card-num">01</span>
+          <h3>CAS</h3>
+          <p>
+            Контент-адресуемое хранилище
+            <a href="https://github.com/CupIvan/hash-server">hash-server</a>.
+            Отдаёт объект по <code>sha256</code> и сверяет адрес с содержимым —
+            подменить незаметно нельзя.
+          </p>
+        </article>
+        <article class="card">
+          <span class="card-num">02</span>
+          <h3>hashchat</h3>
+          <p>
+            Сервер координации. Хранит только порядок: <code>seq</code>,
+            цепочку <code>prev</code> и пару
+            <code>deviceHash → userHash</code>. Сообщений у него нет.
+          </p>
+        </article>
+        <article class="card">
+          <span class="card-num">03</span>
+          <h3>Браузер</h3>
+          <p>
+            Считает канонический JSON, кеширует контент в IndexedDB
+            и пересчитывает <code>sha256</code> при каждом чтении.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="fast" class="section">
+      <div class="section-head">
+        <p class="eyebrow">скорость</p>
+        <h2>Почему быстро</h2>
+      </div>
+      <ul class="list">
+        <li>
+          <strong>Хэш сразу.</strong> Адрес известен до сети: сообщение уходит
+          сразу, контент доливается в CAS в фоне.
+        </li>
+        <li>
+          <strong>Кеш навсегда.</strong> CAS иммутабелен, поэтому IndexedDB-кеш
+          <code>sha256 → content</code> не нужно инвалидировать.
+        </li>
+        <li>
+          <strong>Только хвост.</strong> Long-poll отдаёт один хэш, остальное
+          клиент добирает по цепочке <code>prev</code>.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <p class="eyebrow">сообщение</p>
+        <h2>Что уходит в ленту</h2>
+      </div>
+      <pre class="code"><code>{
+  "ts": 1792496909824,
+  "text": "привет",
+  "author": "&lt;deviceHash&gt;",
+  "prev": "&lt;хэш предыдущего&gt;"
+}</code></pre>
+      <p class="muted">
+        Хэш этого JSON — адрес сообщения в CAS. <code>prev</code> входит
+        в хэш, поэтому лента — цепочка.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>hash-chat</span>
+    <nav>
+      <a href="https://github.com/CupIvan/hash-chat">GitHub</a>
+      <a href="https://github.com/CupIvan/hash-chat#readme">README</a>
+    </nav>
+  </footer>
+</body>
+</html>

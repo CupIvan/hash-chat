@@ -1,0 +1,8 @@
+# runtime data
+data/
+
+# binaries
+/hashchat
+
+# local scratch
+.tmp/
