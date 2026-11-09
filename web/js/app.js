@@ -884,7 +884,7 @@ function submitChatSettings(event) {
   };
   upsertChat(state.chats, next);
   active.chat = state.chats.find((item) => item.id === active.id) || next;
-  setChatHeader(active.chat, visibleTotal());
+  setChatHeader(active.chat, visibleTotal(), state.nextBefore ? state.total : 0);
   refreshChrome();
   closeModal(true);
 
@@ -1069,7 +1069,7 @@ function visibleTotal() {
 
 function updateHeader() {
   if (!state.active) return;
-  setChatHeader(state.active.chat, visibleTotal());
+  setChatHeader(state.active.chat, visibleTotal(), state.nextBefore ? state.total : 0);
 }
 
 /* --- ввод --- */

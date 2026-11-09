@@ -163,11 +163,12 @@ export function updateProfileButton(profile) {
   refs.profileName.title = profile ? profile.login : "Войти";
 }
 
-export function setChatHeader(chat, total) {
+export function setChatHeader(chat, total, of = 0) {
   const title = chat.name || `/${shortId(chat.id)}/`;
+  const count = of > total ? `${total} из ${of}` : String(total);
   refs.chatName.textContent = title;
   refs.chatName.title = chat.id;
-  refs.chatSub.textContent = `${total} ${plural(total, "сообщение", "сообщения", "сообщений")} · ${shortId(chat.id, 12)}`;
+  refs.chatSub.textContent = `${count} ${plural(of || total, "сообщение", "сообщения", "сообщений")} · ${shortId(chat.id, 12)}`;
   document.title = `${title} — hash-chat`;
 }
 
