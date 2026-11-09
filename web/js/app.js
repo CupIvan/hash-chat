@@ -181,6 +181,7 @@ async function openChat(id) {
 
   leaveChat();
   state.active = { id, chat, api, cas, apiUrl: endpoints.api, casUrl: endpoints.cas };
+  if (state.profile) publishProfile({ api: endpoints.api, cas: endpoints.cas });
 
   setScreen("chat");
   setComposerState(state.profile);
@@ -717,17 +718,17 @@ function ensureProfile() {
   return true;
 }
 
-function publishProfile() {
+function publishProfile(endpoints = state.endpoints) {
   const profile = state.profile;
   if (!profile?.deviceHash) return;
 
-  const api = apiFor(state.endpoints.api);
+  const api = apiFor(endpoints.api);
   const register = () => {
     if (api) api.registerId(profile.deviceHash, profile.hash).catch(() => {});
   };
 
   try {
-    const cas = casFor(state.endpoints.cas);
+    const cas = casFor(endpoints.cas);
     if (!cas) {
       register();
       return;
@@ -782,6 +783,9 @@ async function submitProfile(event) {
     saveProfileLocal(profile);
     state.profile = profile;
     publishProfile();
+    if (state.active) {
+      publishProfile({ api: state.active.apiUrl, cas: state.active.casUrl });
+    }
     refreshChrome();
     setComposerState(state.profile);
     if (state.active) renderAll();
